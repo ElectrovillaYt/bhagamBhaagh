@@ -9,6 +9,7 @@ from app.modules.auth.schemas import LoginRequest, RegisterRequest
 
 def register_user(db: Session, payload: RegisterRequest) -> User:
     """Create a new user account after validating email uniqueness."""
+    normalized_name = " ".join(payload.name.split())
     normalized_email = payload.email.lower()
 
     existing_user = db.execute(
@@ -19,7 +20,7 @@ def register_user(db: Session, payload: RegisterRequest) -> User:
         raise ConflictError("An account with this email already exists")
 
     user = User(
-        name=payload.name.strip(),
+        name=normalized_name,
         email=normalized_email,
         password_hash=hash_password(payload.password),
     )
