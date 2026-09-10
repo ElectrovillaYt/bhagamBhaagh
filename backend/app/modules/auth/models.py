@@ -42,12 +42,12 @@ class User(Base):
         nullable=False,
     )
 
-    runs: Mapped[list["Run"]] = relationship(
-        back_populates="user",
-        cascade="all, delete-orphan",
-    )
+    # runs: Mapped[list["Run"]] = relationship(
+    #     back_populates="user",
+    #     cascade="all, delete-orphan",
+    # )
 
-    territories: Mapped[list["Territory"]] = relationship(
-        back_populates="user",
-        cascade="all, delete-orphan",
-    )
+    # territories: Mapped[list["Territory"]] = relationship(
+    #     back_populates="user",
+    #     cascade="all, delete-orphan",
+    # )
