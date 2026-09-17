@@ -1,70 +1,98 @@
-# Getting Started with Create React App
+# Bhagam Bhaagh — Next.js App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The web client for **Bhagam Bhaagh**, a location-aware map experience. It renders an interactive MapLibre map, centers it on the visitor when location access is granted, and retrieves its map style through the project's backend.
 
-## Available Scripts
+> Project status: under active development. See [Desgin.md](./Desgin.md) for the working design and [PROJECT_PROGRESS.md](./PROJECT_PROGRESS.md) for the implementation tracker.
 
-In the project directory, you can run:
+## Current features
 
-### `npm start`
+- Full-screen interactive map powered by MapLibre GL.
+- Browser geolocation on initial load, with a world-map fallback when permission is unavailable.
+- Map style fetched from the backend instead of exposing the MapTiler key in the browser.
+- Zoom, fullscreen, and navigation controls.
+- Viewport data collection on map movement (zoom and bounding box).
+- Next.js route handlers that proxy map requests to the backend.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Authentication, profiles, gameplay, and persistent viewport handling are scaffolded but not yet implemented.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Tech stack
 
-### `npm test`
+- Next.js 16, React 19, TypeScript
+- Tailwind CSS 4
+- MapLibre GL
+- FastAPI backend (in the sibling `../backend` directory)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Prerequisites
 
-### `npm run build`
+- Node.js 20.9 or later
+- npm
+- A running Bhagam Bhaagh backend with a configured MapTiler API key
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Local setup
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. Install frontend dependencies:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+   ```bash
+   npm install
+   ```
 
-### `npm run eject`
+2. Create a `.env.local` file in this directory:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+   ```env
+   BACKEND_URL=http://localhost:8000/api/v1
+   ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+   `BACKEND_URL` must include the backend API prefix. The current backend map router is mounted at `/api/v1/map`.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+3. Start the backend from `../backend` (see its README). Ensure its MapTiler key is configured.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+4. Start the frontend:
 
-## Learn More
+   ```bash
+   npm run dev
+   ```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+5. Open [http://localhost:3000](http://localhost:3000). Allow location access to start near your current position.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Available scripts
 
-### Code Splitting
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the development server. |
+| `npm run build` | Create a production build. |
+| `npm run start` | Run the production server after building. |
+| `npm run lint` | Run ESLint. |
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Request flow
 
-### Analyzing the Bundle Size
+```text
+Browser → Next.js /routes/get-tiles → FastAPI /api/v1/map/tiles → MapTiler style JSON
+Browser → MapLibre GL → rendered interactive map
+Browser → Next.js /routes/send-view → backend viewport endpoint (in progress)
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+The browser never calls MapTiler directly; the backend owns the API key and returns the style payload.
 
-### Making a Progressive Web App
+## Project structure
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```text
+src/
+├── app/                 # App Router entry points and server route handlers
+├── components/          # Reusable UI and map components
+├── lib/                 # Shared error classes
+├── pages/               # Feature-level page components
+└── utils/Map/           # Geolocation, tile, and viewport client helpers
+```
 
-### Advanced Configuration
+## API integration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+| Frontend route | Upstream backend route | State |
+| --- | --- | --- |
+| `GET /routes/get-tiles` | `GET /api/v1/map/tiles` | Implemented |
+| `POST /routes/send-view` | `POST /api/v1/map/viewport` | Frontend scaffolded; backend route pending |
 
-### Deployment
+## Notes for contributors
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Keep credentials in environment files; do not commit `.env.local` or MapTiler keys.
+- Map rendering is a client-side concern because it requires the browser DOM and geolocation API.
+- Update [PROJECT_PROGRESS.md](./PROJECT_PROGRESS.md) as work moves between planned, in-progress, and complete.
